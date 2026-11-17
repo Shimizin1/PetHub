@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Entrar | PetHub{% endblock %}
+{% block publico %}
+<div class="login">
+  <section class="login-art" aria-hidden="false">
+    <a class="brand" href="#" tabindex="-1">
+      <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+      <span class="brand-name">Pet<span>Hub</span></span>
+    </a>
+    <div>
+      <h2>Tudo da sua loja pet em um só lugar.</h2>
+      <p>Clientes, pets, serviços e a agenda do dia organizados para você atender melhor.</p>
+    </div>
+    <img class="ilustracao" src="{{ url_for('static', filename='img/ilustracao-login.svg') }}" alt="Ilustração de um cachorro e um gato">
+  </section>
+
+  <section class="login-form-wrap">
+    <div class="login-card">
+      <div class="brand-mobile">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+        <span class="brand-name">Pet<span>Hub</span></span>
+      </div>
+      <h1>Bem-vindo de volta</h1>
+      <p class="text-muted mb-4">Entre com seu usuário e senha para acessar o sistema.</p>
+      {% include "_flash.html" %}
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label" for="usuario">Usuário</label>
+          <input class="form-control form-control-lg" id="usuario" name="usuario" autocomplete="username" required autofocus>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="senha">Senha</label>
+          <input class="form-control form-control-lg" type="password" id="senha" name="senha" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-brand btn-lg w-100">Entrar</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

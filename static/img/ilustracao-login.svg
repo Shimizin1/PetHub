@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 380" role="img" aria-label="Um cachorro e um gato lado a lado">
+  <defs>
+    <clipPath id="recorte"><circle cx="240" cy="210" r="160"/></clipPath>
+    <symbol id="pata" viewBox="0 0 64 64">
+      <g fill="currentColor">
+        <ellipse cx="17" cy="30" rx="5.500" ry="7.500" transform="rotate(-20 17 30)"/>
+        <ellipse cx="26.500" cy="20" rx="5.500" ry="8" transform="rotate(-8 26.500 20)"/>
+        <ellipse cx="37.500" cy="20" rx="5.500" ry="8" transform="rotate(8 37.500 20)"/>
+        <ellipse cx="47" cy="30" rx="5.500" ry="7.500" transform="rotate(20 47 30)"/>
+        <path d="M32 31c-8 0-15 7-15 13.500 0 4.200 3.200 6.500 7 6.500 3 0 5-1.300 8-1.300s5 1.300 8 1.300c3.800 0 7-2.300 7-6.500C47 38 40 31 32 31z"/>
+      </g>
+    </symbol>
+  </defs>
+
+  <use href="#pata" x="30" y="40" width="46" height="46" color="#FFC62B" opacity=".28" transform="rotate(-18 53 63)"/>
+  <use href="#pata" x="400" y="250" width="40" height="40" color="#FFC62B" opacity=".28" transform="rotate(16 420 270)"/>
+  <use href="#pata" x="60" y="300" width="30" height="30" color="#FFFFFF" opacity=".14" transform="rotate(10 75 315)"/>
+
+  <circle cx="240" cy="210" r="160" fill="#17448F"/>
+  <circle cx="385" cy="88" r="46" fill="#FFC62B"/>
+
+  <g clip-path="url(#recorte)">
+    <!-- cachorro -->
+    <ellipse cx="168" cy="330" rx="76" ry="58" fill="#FFF3CF"/>
+    <path d="M114 282Q168 306 222 282" fill="none" stroke="#FFC62B" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="168" cy="302" r="8" fill="#FFC62B" stroke="#0B2A5B" stroke-width="3"/>
+    <ellipse cx="106" cy="214" rx="21" ry="44" transform="rotate(14 106 214)" fill="#E0A21A"/>
+    <ellipse cx="230" cy="214" rx="21" ry="44" transform="rotate(-14 230 214)" fill="#E0A21A"/>
+    <ellipse cx="168" cy="222" rx="62" ry="58" fill="#FFF3CF"/>
+    <circle cx="147" cy="214" r="6.500" fill="#0B2A5B"/>
+    <circle cx="189" cy="214" r="6.500" fill="#0B2A5B"/>
+    <circle cx="149" cy="212" r="2" fill="#fff"/>
+    <circle cx="191" cy="212" r="2" fill="#fff"/>
+    <ellipse cx="168" cy="240" rx="27" ry="19" fill="#FFFFFF"/>
+    <ellipse cx="168" cy="231" rx="9.500" ry="6.500" fill="#0B2A5B"/>
+    <path d="M168 237v8M168 245q-8 8-16 2M168 245q8 8 16 2" fill="none" stroke="#0B2A5B" stroke-width="3" stroke-linecap="round"/>
+    <path d="M163 249q5 14 10 0z" fill="#FF7A8A"/>
+
+    <!-- gato -->
+    <ellipse cx="322" cy="332" rx="68" ry="56" fill="#78A3F5"/>
+    <path d="M270 288Q322 310 374 288" fill="none" stroke="#FFC62B" stroke-width="12" stroke-linecap="round"/>
+    <path d="M268 214L274 152L314 190z" fill="#8FB6FF"/>
+    <path d="M376 214L370 152L330 190z" fill="#8FB6FF"/>
+    <path d="M279 200L282 169L303 190z" fill="#FF9FB0"/>
+    <path d="M365 200L362 169L341 190z" fill="#FF9FB0"/>
+    <ellipse cx="322" cy="232" rx="58" ry="52" fill="#8FB6FF"/>
+    <ellipse cx="302" cy="226" rx="6.500" ry="9" fill="#0B2A5B"/>
+    <ellipse cx="342" cy="226" rx="6.500" ry="9" fill="#0B2A5B"/>
+    <circle cx="304" cy="222" r="2.200" fill="#fff"/>
+    <circle cx="344" cy="222" r="2.200" fill="#fff"/>
+    <path d="M315 244h14l-7 8z" fill="#FF7A8A"/>
+    <path d="M322 252q-6 8-14 3M322 252q6 8 14 3" fill="none" stroke="#0B2A5B" stroke-width="3" stroke-linecap="round"/>
+    <g stroke="#FFFFFF" stroke-width="2.500" stroke-linecap="round" opacity=".85">
+      <path d="M290 246L256 240M290 254L256 260"/>
+      <path d="M354 246L388 240M354 254L388 260"/>
+    </g>
+  </g>
+</svg>

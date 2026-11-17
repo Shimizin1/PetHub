@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar" if editando else "Novo cadastro" }} | {{ titulo }}{% endblock %}
+{% block content %}
+{% set tipos_html = {'texto': 'text', 'decimal': 'number', 'inteiro': 'number', 'data': 'date', 'datahora': 'datetime-local', 'senha': 'password'} %}
+<div class="page-head">
+  <div class="page-title">
+    <div>
+      <h1>{{ ("Atualizar" if parcial else "Editar") if editando else "Novo cadastro" }}</h1>
+      <p>{{ titulo }}</p>
+    </div>
+  </div>
+</div>
+
+{% if parcial %}
+<div class="alert alert-info">Seu perfil pode alterar apenas o status e as observações deste agendamento.</div>
+{% endif %}
+
+<form method="post" class="panel">
+  <div class="panel-body">
+    <div class="row g-3">
+    {% for c in campos %}
+      {% set nome_input = 'senha' if c.tipo == 'senha' else c.nome %}
+      {% set travado = parcial and not c.parcial %}
+      <div class="{{ 'col-12' if (c.max or 0) >= 150 else 'col-md-6' }}">
+        <label class="form-label" for="{{ nome_input }}">{{ c.rotulo }}{% if c.obrigatorio or (c.tipo == 'senha' and not editando) %} *{% endif %}</label>
+        {% if c.tipo == 'select' %}
+          <select class="form-select" id="{{ nome_input }}" name="{{ nome_input }}" {% if c.obrigatorio %}required{% endif %} {% if travado %}disabled{% endif %}>
+            <option value="">Selecione...</option>
+            {% for valor, texto in opcoes[c.nome] %}
+              <option value="{{ valor }}" {% if registro.get(c.nome, '')|string == valor|string %}selected{% endif %}>{{ texto }}</option>
+            {% endfor %}
+          </select>
+        {% elif c.tipo == 'senha' %}
+          <input class="form-control" type="password" id="senha" name="senha" minlength="6" autocomplete="new-password" {% if not editando %}required{% endif %}>
+          {% if editando %}<div class="form-text">Deixe em branco para manter a senha atual.</div>{% endif %}
+        {% else %}
+          <input class="form-control" type="{{ tipos_html[c.tipo] }}" id="{{ nome_input }}" name="{{ nome_input }}"
+                 value="{{ registro.get(c.nome, '') }}"
+                 {% if c.tipo == 'texto' %}maxlength="{{ c.max or 100 }}"{% endif %}
+                 {% if c.tipo == 'decimal' %}min="0" step="0.01"{% endif %}
+                 {% if c.tipo == 'inteiro' %}min="0" step="1"{% endif %}
+                 {% if c.obrigatorio %}required{% endif %} {% if travado %}disabled{% endif %}>
+        {% endif %}
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  <div class="panel-foot">
+    <button class="btn btn-brand"><i class="bi bi-check-lg"></i> Salvar</button>
+    <a class="btn btn-ghost" href="{{ url_for(endpoint ~ '.listar') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}
