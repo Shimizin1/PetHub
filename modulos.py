@@ -6,6 +6,8 @@ STATUS = ["Agendado", "Concluído", "Cancelado"]
 PERFIS_OPCOES = [("administrador", "Administrador"), ("atendente", "Atendente"),
                  ("veterinario", "Veterinário")]
 
+# Perfis que a EQUIPE pode cadastrar em /admin/usuarios. O perfil "cliente" nasce no auto-cadastro
+# do site (/cadastro), porque precisa estar ligado a um registro de cliente.
 # Itens do menu lateral: (módulo, texto, ícone do Bootstrap Icons)
 MENU = [
     ("clientes", "Clientes", "bi-people"),
@@ -101,6 +103,7 @@ usuarios_bp = criar_crud(
     sql_listagem="SELECT id, nome, usuario, perfil FROM usuarios",
     colunas=[("ID", "id"), ("Nome", "nome"), ("Usuário", "usuario"), ("Perfil", "perfil", "perfil")],
     busca_sql=["nome", "usuario"], ordem="id DESC", bloquear_proprio=True,
+    where_base="perfil <> 'cliente'",      # contas de clientes não aparecem aqui
 )
 
 TODOS = [clientes_bp, pets_bp, servicos_bp, agendamentos_bp, usuarios_bp]

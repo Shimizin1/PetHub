@@ -2,7 +2,7 @@
 Fábrica de CRUD: cria um Blueprint completo (listar, novo, editar, excluir)
 a partir de uma descrição dos campos. Cada módulo do sistema (clientes, pets,
 serviços, agendamentos, usuários) usa esta mesma lógica, mudando só a configuração
-que está em modulos.py.
+que está em modulos.py. Todos ficam na área da equipe: /admin/<módulo>/...
 """
 from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
@@ -102,8 +102,13 @@ def _para_formulario(registro):
 
 
 def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
-               busca_sql, ordem, descricao="", bloquear_proprio=False):
-    bp = Blueprint(endpoint, __name__, url_prefix=f"/{endpoint}")
+               busca_sql, ordem, descricao="", bloquear_proprio=False, where_base=None):
+    """
+    where_base: filtro fixo do módulo (ex.: "perfil <> 'cliente'"). Vale para listar, editar e excluir,
+    então o registro fora do filtro não aparece nem pode ser alterado mexendo na URL.
+    """
+    bp = Blueprint(endpoint, __name__, url_prefix=f"/admin/{endpoint}")
+    extra = f" AND ({where_base})" if where_base else ""
     ctx = dict(endpoint=endpoint, titulo=titulo, campos=campos, descricao=descricao)
 
     @bp.before_request
@@ -112,7 +117,7 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
         acao = request.endpoint.split(".")[1]
         if not pode(current_user.perfil, endpoint, acao):
             flash("Seu perfil não tem acesso a esta área.", "warning")
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("admin.dashboard"))
 
     @bp.route("/")
     def listar():
@@ -120,17 +125,19 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
         conexao = get_connection()
         if conexao is None:
             flash("Falha na conexão com o banco.", "danger")
-            return render_template("listar.html", registros=[], busca=busca,
+            return render_template("admin/listar.html", registros=[], busca=busca,
                                    colunas=colunas, **ctx)
         cursor = conexao.cursor(dictionary=True)
         try:
+            condicoes, parametros = [], ()
+            if where_base:
+                condicoes.append(f"({where_base})")
             if busca:
-                filtro = " WHERE " + " OR ".join(f"{e} LIKE %s" for e in busca_sql)
+                condicoes.append("(" + " OR ".join(f"{e} LIKE %s" for e in busca_sql) + ")")
                 parametros = tuple([f"%{busca}%"] * len(busca_sql))
-            else:
-                filtro, parametros = "", ()
+            filtro = (" WHERE " + " AND ".join(condicoes)) if condicoes else ""
             cursor.execute(f"{sql_listagem}{filtro} ORDER BY {ordem}", parametros)
-            return render_template("listar.html", registros=cursor.fetchall(),
+            return render_template("admin/listar.html", registros=cursor.fetchall(),
                                    busca=busca, colunas=colunas, **ctx)
         finally:
             cursor.close()
@@ -164,7 +171,7 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
                     except mysql.connector.Error:
                         conexao.rollback()
                         flash("Não foi possível salvar (verifique se o dado já existe).", "danger")
-            return render_template("formulario.html", registro=registro,
+            return render_template("admin/formulario.html", registro=registro,
                                    opcoes=opcoes, editando=False, parcial=False, **ctx)
         finally:
             cursor.close()
@@ -178,7 +185,7 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
             return redirect(url_for(f"{endpoint}.listar"))
         cursor = conexao.cursor(dictionary=True)
         try:
-            cursor.execute(f"SELECT * FROM {tabela} WHERE id = %s", (id,))
+            cursor.execute(f"SELECT * FROM {tabela} WHERE id = %s{extra}", (id,))
             atual = cursor.fetchone()
             if atual is None:
                 flash("Registro não encontrado.", "warning")
@@ -194,7 +201,7 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
                 else:
                     try:
                         sets = ", ".join(f"{col} = %s" for col in valores)
-                        cursor.execute(f"UPDATE {tabela} SET {sets} WHERE id = %s",
+                        cursor.execute(f"UPDATE {tabela} SET {sets} WHERE id = %s{extra}",
                                        (*valores.values(), id))
                         conexao.commit()
                         flash("Registro atualizado com sucesso!", "success")
@@ -202,7 +209,7 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
                     except mysql.connector.Error:
                         conexao.rollback()
                         flash("Não foi possível atualizar (verifique se o dado já existe).", "danger")
-            return render_template("formulario.html", registro=registro, opcoes=opcoes,
+            return render_template("admin/formulario.html", registro=registro, opcoes=opcoes,
                                    editando=True, parcial=parcial, **ctx)
         finally:
             cursor.close()
@@ -219,9 +226,12 @@ def criar_crud(endpoint, titulo, tabela, campos, sql_listagem, colunas,
             return redirect(url_for(f"{endpoint}.listar"))
         cursor = conexao.cursor()
         try:
-            cursor.execute(f"DELETE FROM {tabela} WHERE id = %s", (id,))
+            cursor.execute(f"DELETE FROM {tabela} WHERE id = %s{extra}", (id,))
             conexao.commit()
-            flash("Registro excluído com sucesso!", "success")
+            if cursor.rowcount:
+                flash("Registro excluído com sucesso!", "success")
+            else:
+                flash("Registro não encontrado.", "warning")
         except mysql.connector.IntegrityError:
             conexao.rollback()
             flash("Este registro possui vínculos com outros cadastros e não pode ser excluído.", "warning")

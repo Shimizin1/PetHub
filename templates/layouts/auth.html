@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{# TEMPLATE DE ENTRADA: tela dividida (ilustração + formulário). Usado por login e cadastro #}
+{% block corpo %}
+<div class="login">
+  <section class="login-art">
+    <a class="brand" href="{{ url_for('publico.home') }}">
+      <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+      <span class="brand-name">Pet<span>Hub</span></span>
+    </a>
+    <div>
+      <h2>{% block arte_titulo %}Tudo da sua loja pet em um só lugar.{% endblock %}</h2>
+      <p>{% block arte_texto %}Clientes, pets, serviços e a agenda do dia organizados para você atender melhor.{% endblock %}</p>
+    </div>
+    <img class="ilustracao" src="{{ url_for('static', filename='img/ilustracao-login.svg') }}" alt="Ilustração de um cachorro e um gato">
+  </section>
+
+  <section class="login-form-wrap">
+    <div class="login-card">
+      <a class="brand-mobile" href="{{ url_for('publico.home') }}">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+        <span class="brand-name">Pet<span>Hub</span></span>
+      </a>
+      {% include "_flash.html" %}
+      {% block form %}{% endblock %}
+    </div>
+  </section>
+</div>
+{% endblock %}

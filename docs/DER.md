@@ -6,6 +6,7 @@ O Workbench monta o EER automaticamente com as chaves estrangeiras.
 
 ```mermaid
 erDiagram
+    CLIENTES ||--o| USUARIOS : "tem login"
     CLIENTES ||--o{ PETS : "possui"
     PETS ||--o{ AGENDAMENTOS : "recebe"
     SERVICOS ||--o{ AGENDAMENTOS : "é realizado em"
@@ -15,6 +16,8 @@ erDiagram
         varchar nome
         varchar usuario "UNIQUE"
         varchar senha_hash
+        enum perfil "administrador|atendente|veterinario|cliente"
+        int cliente_id FK "UNIQUE, só para perfil cliente"
     }
     CLIENTES {
         int id PK
@@ -47,4 +50,4 @@ erDiagram
 ```
 
 **Relacionamentos (1:N):** um cliente tem vários pets; um pet tem vários agendamentos; um serviço aparece em vários agendamentos.
-`usuarios` é independente (somente login do sistema).
+`usuarios` guarda o login de todos. Contas de **cliente** ligam-se a um dono pela FK `cliente_id` (1:1); contas da equipe têm `cliente_id` nulo.

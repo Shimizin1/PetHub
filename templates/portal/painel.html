@@ -1,0 +1,43 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}Meu painel | PetHub{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-title"><div><h1>{{ saudacao }}, {{ current_user.nome.split(' ')[0] }}</h1><p>{{ hoje|capitalize }}</p></div></div>
+  <a class="btn btn-brand" href="{{ url_for('portal.agendamento_novo') }}"><i class="bi bi-calendar-plus"></i> Novo agendamento</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <section class="panel h-100">
+      <div class="panel-head"><h2>Próximos agendamentos</h2><a class="btn btn-sm btn-ghost" href="{{ url_for('portal.agendamentos') }}">Ver todos</a></div>
+      <ul class="lista-cartoes">
+        {% for a in proximos %}
+        <li>
+          <div class="data-bloco"><b>{{ a.data_hora.strftime('%d/%m') }}</b><span>{{ a.data_hora.strftime('%H:%M') }}</span></div>
+          <div class="flex-grow-1"><b>{{ a.servico }}</b><div class="text-muted">para {{ a.pet }}</div></div>
+          <div class="text-end"><b>{{ a.preco|moeda }}</b></div>
+        </li>
+        {% else %}
+        <li class="vazio d-block">Você não tem horários marcados. <a href="{{ url_for('portal.agendamento_novo') }}">Agende agora</a>.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+  <div class="col-lg-5">
+    <section class="panel h-100">
+      <div class="panel-head"><h2>Meus pets</h2><a class="btn btn-sm btn-ghost" href="{{ url_for('portal.pet_novo') }}"><i class="bi bi-plus-lg"></i> Novo</a></div>
+      <ul class="lista-cartoes">
+        {% for p in pets %}
+        <li>
+          <div class="avatar-pet" aria-hidden="true">{{ p.nome[0]|upper }}</div>
+          <div class="flex-grow-1"><b>{{ p.nome }}</b><div class="text-muted">{{ p.especie }}{% if p.raca %} · {{ p.raca }}{% endif %}</div></div>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('portal.agendamento_novo', pet=p.id) }}">Agendar</a>
+        </li>
+        {% else %}
+        <li class="vazio d-block">Nenhum pet ainda. <a href="{{ url_for('portal.pet_novo') }}">Cadastre o primeiro</a>.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

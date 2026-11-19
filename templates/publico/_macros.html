@@ -1,0 +1,9 @@
+{% macro icone_servico(nome) -%}
+{%- set n = nome|lower -%}
+{%- if 'banho' in n and 'tosa' in n %}bi-stars
+{%- elif 'banho' in n %}bi-droplet-half
+{%- elif 'tosa' in n %}bi-scissors
+{%- elif 'consulta' in n or 'vet' in n %}bi-heart-pulse
+{%- elif 'vacin' in n %}bi-shield-plus
+{%- else %}bi-balloon-heart{% endif -%}
+{%- endmacro %}

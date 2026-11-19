@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{# TEMPLATE DA EQUIPE: menu lateral. Usado por tudo que está em /admin #}
+{% block body_class %}area-admin{% endblock %}
+{% block corpo %}
+  <header class="topbar d-lg-none">
+    <button class="btn" data-bs-toggle="offcanvas" data-bs-target="#menu" aria-controls="menu" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+    <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+    <span class="brand-name">Pet<span>Hub</span></span>
+  </header>
+
+  <aside class="offcanvas offcanvas-start sidebar" tabindex="-1" id="menu" aria-label="Menu principal">
+    <div class="sidebar-inner">
+      <a class="brand" href="{{ url_for('admin.dashboard') }}">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+        <span class="brand-name">Pet<span>Hub</span></span>
+      </a>
+      <nav class="nav-side">
+        <a href="{{ url_for('admin.dashboard') }}" class="{{ 'ativo' if request.endpoint == 'admin.dashboard' }}"><i class="bi bi-grid-1x2"></i> Início</a>
+        {% for modulo, texto, icone in MENU %}
+          {% if pode(modulo, 'listar') %}
+          <a href="{{ url_for(modulo ~ '.listar') }}" class="{{ 'ativo' if request.blueprint == modulo }}"><i class="bi {{ icone }}"></i> {{ texto }}</a>
+          {% endif %}
+        {% endfor %}
+        <a href="{{ url_for('publico.home') }}" class="mt-2" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Ver o site</a>
+      </nav>
+      <div class="sidebar-user">
+        <div class="user-row">
+          <div class="avatar" aria-hidden="true">{{ current_user.nome[0]|upper }}</div>
+          <div>
+            <div class="user-nome">{{ current_user.nome }}</div>
+            <div class="user-perfil">{{ PERFIS.get(current_user.perfil, current_user.perfil) }}</div>
+          </div>
+        </div>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <button class="btn btn-sair"><i class="bi bi-box-arrow-right"></i> Sair</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <main class="app-content">
+      {% include "_flash.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}

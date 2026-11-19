@@ -1,0 +1,47 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}Meus agendamentos | PetHub{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-title"><div class="icone-modulo"><i class="bi bi-calendar-check"></i></div><div><h1>Meus agendamentos</h1><p>Horários marcados e histórico.</p></div></div>
+  <a class="btn btn-brand" href="{{ url_for('portal.agendamento_novo') }}"><i class="bi bi-calendar-plus"></i> Novo agendamento</a>
+</div>
+
+<section class="panel mb-4">
+  <div class="panel-head"><h2>Próximos</h2></div>
+  <ul class="lista-cartoes">
+    {% for a in proximos %}
+    <li>
+      <div class="data-bloco"><b>{{ a.data_hora.strftime('%d/%m') }}</b><span>{{ a.data_hora.strftime('%H:%M') }}</span></div>
+      <div class="flex-grow-1">
+        <b>{{ a.servico }}</b> <span class="text-muted">para {{ a.pet }}</span>
+        <div class="text-muted small">{{ a.preco|moeda }}{% if a.observacoes %} · {{ a.observacoes }}{% endif %}</div>
+      </div>
+      <form method="post" action="{{ url_for('portal.agendamento_cancelar', id=a.id) }}" onsubmit="return confirmarCancelamento();">
+        <button class="btn btn-sm btn-outline-danger">Cancelar</button>
+      </form>
+    </li>
+    {% else %}
+    <li class="vazio d-block">Nenhum horário marcado.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Histórico</h2></div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Data e hora</th><th>Pet</th><th>Serviço</th><th>Valor</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for a in historico %}
+        <tr>
+          <td class="text-nowrap">{{ a.data_hora|datahora_br }}</td><td>{{ a.pet }}</td><td>{{ a.servico }}</td>
+          <td>{{ a.preco|moeda }}</td><td><span class="chip chip-{{ a.status|status_classe }}">{{ a.status }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="vazio">Seu histórico aparecerá aqui.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

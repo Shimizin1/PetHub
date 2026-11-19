@@ -1,0 +1,18 @@
+{% extends "layouts/auth.html" %}
+{% block title %}Entrar | PetHub{% endblock %}
+{% block form %}
+  <h1>Bem-vindo de volta</h1>
+  <p class="text-muted mb-4">Entre com seu usuário e senha para continuar.</p>
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label" for="usuario">Usuário</label>
+      <input class="form-control form-control-lg" id="usuario" name="usuario" autocomplete="username" required autofocus>
+    </div>
+    <div class="mb-4">
+      <label class="form-label" for="senha">Senha</label>
+      <input class="form-control form-control-lg" type="password" id="senha" name="senha" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn-brand btn-lg w-100">Entrar</button>
+  </form>
+  <p class="text-center mt-4 mb-0">Ainda não tem conta? <a href="{{ url_for('auth.cadastro') }}"><b>Cadastre-se grátis</b></a></p>
+{% endblock %}

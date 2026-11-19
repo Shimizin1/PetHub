@@ -1,0 +1,44 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}Novo agendamento | PetHub{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-title"><div><h1>Novo agendamento</h1><p>{{ loja.horario }}.</p></div></div></div>
+<form method="post" class="panel form-estreito">
+  <div class="panel-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="pet_id">Pet *</label>
+        <select class="form-select" id="pet_id" name="pet_id" required>
+          <option value="">Selecione...</option>
+          {% for p in pets %}<option value="{{ p.id }}" {{ 'selected' if registro.get('pet_id')|string == p.id|string }}>{{ p.nome }} ({{ p.especie }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="servico_id">Serviço *</label>
+        <select class="form-select" id="servico_id" name="servico_id" required>
+          <option value="">Selecione...</option>
+          {% for s in servicos %}<option value="{{ s.id }}" {{ 'selected' if registro.get('servico_id')|string == s.id|string }}>{{ s.nome }} · {{ s.preco|moeda }} · {{ s.duracao_min }} min</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="data">Data *</label>
+        <input class="form-control" type="date" id="data" name="data" min="{{ hoje }}" value="{{ registro.get('data', '') }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="hora">Horário *</label>
+        <select class="form-select" id="hora" name="hora" required>
+          <option value="">Selecione...</option>
+          {% for h in horarios %}<option value="{{ h }}" {{ 'selected' if registro.get('hora') == h }}>{{ h }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label" for="observacoes">Observações</label>
+        <input class="form-control" id="observacoes" name="observacoes" maxlength="200" value="{{ registro.get('observacoes', '') }}" placeholder="Ex.: o Thor tem medo do secador">
+      </div>
+    </div>
+  </div>
+  <div class="panel-foot">
+    <button class="btn btn-brand"><i class="bi bi-check-lg"></i> Confirmar agendamento</button>
+    <a class="btn btn-ghost" href="{{ url_for('portal.agendamentos') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

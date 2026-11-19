@@ -1,0 +1,10 @@
+{% extends layout %}
+{% block title %}{{ titulo }} | PetHub{% endblock %}
+{% block content %}
+<section class="erro-pagina">
+  <div class="erro-codigo">{{ codigo }}</div>
+  <h1>{{ titulo }}</h1>
+  <p>{{ mensagem }}</p>
+  <a class="btn btn-brand" href="{{ url_for('auth.painel') if current_user.is_authenticated else url_for('publico.home') }}"><i class="bi bi-arrow-left"></i> Voltar ao início</a>
+</section>
+{% endblock %}

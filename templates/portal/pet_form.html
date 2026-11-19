@@ -1,0 +1,34 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}{{ 'Editar pet' if editando else 'Novo pet' }} | PetHub{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-title"><div><h1>{{ 'Editar pet' if editando else 'Novo pet' }}</h1><p>Conte um pouco sobre o seu bichinho.</p></div></div></div>
+<form method="post" class="panel form-estreito">
+  <div class="panel-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label" for="nome">Nome do pet *</label>
+        <input class="form-control" id="nome" name="nome" maxlength="60" value="{{ registro.get('nome', '') }}" required autofocus>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="especie">Espécie *</label>
+        <select class="form-select" id="especie" name="especie" required>
+          <option value="">Selecione...</option>
+          {% for e in especies %}<option value="{{ e }}" {{ 'selected' if registro.get('especie') == e }}>{{ e }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="raca">Raça</label>
+        <input class="form-control" id="raca" name="raca" maxlength="60" value="{{ registro.get('raca', '') }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="data_nascimento">Data de nascimento</label>
+        <input class="form-control" type="date" id="data_nascimento" name="data_nascimento" max="{{ hoje }}" value="{{ registro.get('data_nascimento', '') }}">
+      </div>
+    </div>
+  </div>
+  <div class="panel-foot">
+    <button class="btn btn-brand"><i class="bi bi-check-lg"></i> Salvar</button>
+    <a class="btn btn-ghost" href="{{ url_for('portal.pets') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

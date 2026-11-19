@@ -1,0 +1,28 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}Meus pets | PetHub{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-title"><div class="icone-modulo"><i class="bi bi-balloon-heart"></i></div><div><h1>Meus pets</h1><p>Os bichinhos que você cadastrou.</p></div></div>
+  <a class="btn btn-brand" href="{{ url_for('portal.pet_novo') }}"><i class="bi bi-plus-lg"></i> Novo pet</a>
+</div>
+<div class="cards-pet">
+  {% for p in pets %}
+  <article class="card-pet">
+    <div class="d-flex align-items-center gap-3">
+      <div class="avatar-pet avatar-pet-lg" aria-hidden="true">{{ p.nome[0]|upper }}</div>
+      <div><h3>{{ p.nome }}</h3><div class="text-muted">{{ p.especie }}{% if p.raca %} · {{ p.raca }}{% endif %}</div></div>
+    </div>
+    <p class="card-pet-info"><i class="bi bi-cake2"></i> {{ p.data_nascimento|data_br if p.data_nascimento else 'Nascimento não informado' }}</p>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-brand btn-sm" href="{{ url_for('portal.agendamento_novo', pet=p.id) }}">Agendar</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('portal.pet_editar', id=p.id) }}"><i class="bi bi-pencil-square"></i> Editar</a>
+      <form method="post" action="{{ url_for('portal.pet_excluir', id=p.id) }}" onsubmit="return confirmarExclusao('{{ p.nome|e }}');">
+        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Remover</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <div class="panel vazio">Você ainda não cadastrou nenhum pet. <a href="{{ url_for('portal.pet_novo') }}">Cadastrar agora</a>.</div>
+  {% endfor %}
+</div>
+{% endblock %}

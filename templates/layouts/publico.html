@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{# TEMPLATE PÚBLICO: vitrine da loja para quem ainda não entrou. Usado em / e /servicos #}
+{% block body_class %}area-publica{% endblock %}
+{% block corpo %}
+  <header class="nav-publico">
+    <nav class="navbar navbar-expand-md container-xl" aria-label="Menu do site">
+      <a class="brand brand-topo" href="{{ url_for('publico.home') }}">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+        <span class="brand-name">Pet<span>Hub</span></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuSite"
+              aria-controls="menuSite" aria-expanded="false" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="collapse navbar-collapse" id="menuSite">
+        <ul class="navbar-nav me-auto gap-md-1 mt-3 mt-md-0">
+          <li class="nav-item"><a class="nav-link {{ 'ativo' if request.endpoint == 'publico.home' }}" href="{{ url_for('publico.home') }}">Início</a></li>
+          <li class="nav-item"><a class="nav-link {{ 'ativo' if request.endpoint == 'publico.servicos' }}" href="{{ url_for('publico.servicos') }}">Serviços</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+          {% if current_user.is_authenticated %}
+            <a class="btn btn-brand btn-sm" href="{{ url_for('auth.painel') }}"><i class="bi bi-grid-1x2"></i> Meu painel</a>
+            <form method="post" action="{{ url_for('auth.logout') }}"><button class="btn btn-sm btn-sair-topo">Sair</button></form>
+          {% else %}
+            <a class="btn btn-sm btn-sair-topo" href="{{ url_for('auth.login') }}">Entrar</a>
+            <a class="btn btn-brand btn-sm" href="{{ url_for('auth.cadastro') }}">Criar conta</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+  </header>
+  <div class="container-xl">{% include "_flash.html" %}</div>
+  {% block content %}{% endblock %}
+  <footer class="rodape">
+    <div class="container-xl d-flex flex-wrap justify-content-between gap-3">
+      <div><b>{{ loja.nome }}</b><br><span class="text-muted">{{ loja.horario }}</span></div>
+      <div class="d-flex gap-3 align-items-center">
+        <a href="{{ url_for('publico.servicos') }}">Serviços</a>
+        <a href="{{ url_for('auth.cadastro') }}">Criar conta</a>
+        <a href="{{ url_for('auth.login') }}">Entrar</a>
+      </div>
+    </div>
+  </footer>
+{% endblock %}

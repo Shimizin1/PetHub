@@ -1,0 +1,42 @@
+{% extends "layouts/auth.html" %}
+{% block title %}Criar conta | PetHub{% endblock %}
+{% block arte_titulo %}Agende o banho do seu pet sem sair de casa.{% endblock %}
+{% block arte_texto %}Crie sua conta, cadastre seu bichinho e escolha o melhor horário.{% endblock %}
+{% block form %}
+  <h1>Crie sua conta</h1>
+  <p class="text-muted mb-4">Leva menos de um minuto.</p>
+  <form method="post">
+    <div class="mb-3">
+      <label class="form-label" for="nome">Seu nome *</label>
+      <input class="form-control" id="nome" name="nome" maxlength="100" value="{{ form.get('nome', '') }}" autocomplete="name" required autofocus>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label" for="telefone">Telefone</label>
+        <input class="form-control" id="telefone" name="telefone" maxlength="20" value="{{ form.get('telefone', '') }}" autocomplete="tel" placeholder="(63) 99999-9999">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label" for="cidade">Cidade</label>
+        <input class="form-control" id="cidade" name="cidade" maxlength="60" value="{{ form.get('cidade', '') }}" autocomplete="address-level2">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="usuario">Usuário (para entrar) *</label>
+      <input class="form-control" id="usuario" name="usuario" maxlength="30" pattern="[a-z0-9._\-]{3,30}"
+             value="{{ form.get('usuario', '') }}" autocomplete="username" required aria-describedby="ajudaUsuario">
+      <div id="ajudaUsuario" class="form-text">De 3 a 30 caracteres: letras minúsculas, números, ponto, hífen ou _.</div>
+    </div>
+    <div class="row g-3 mb-4">
+      <div class="col-sm-6">
+        <label class="form-label" for="senha">Senha *</label>
+        <input class="form-control" type="password" id="senha" name="senha" minlength="6" autocomplete="new-password" required>
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label" for="confirmar">Confirmar senha *</label>
+        <input class="form-control" type="password" id="confirmar" name="confirmar" minlength="6" autocomplete="new-password" required>
+      </div>
+    </div>
+    <button class="btn btn-brand btn-lg w-100">Criar conta</button>
+  </form>
+  <p class="text-center mt-4 mb-0">Já tem conta? <a href="{{ url_for('auth.login') }}"><b>Entrar</b></a></p>
+{% endblock %}

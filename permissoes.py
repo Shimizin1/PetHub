@@ -1,18 +1,30 @@
 """
 Controle de acesso por perfil.
 
-Níveis de permissão de um perfil em cada módulo:
+Há dois "mundos" no sistema:
+  - EQUIPE  (administrador, atendente, veterinário) -> área /admin
+  - CLIENTE (dono do pet)                           -> área /cliente
+
+Níveis de permissão de um perfil da equipe em cada módulo do /admin:
   nenhum  -> não vê o módulo
   leitura -> só consulta (listar)
   parcial -> consulta e altera apenas os campos marcados com "parcial": True em modulos.py
   total   -> consulta, cadastra, edita e exclui
+
+O cliente não aparece em PERMISSOES de propósito: ele nunca acessa os módulos do /admin.
+Já o que ele pode fazer na própria área (ver só os SEUS pets e agendamentos) é garantido
+em rotas/portal.py, filtrando sempre pelo cliente_id do usuário logado.
 """
 
 PERFIS = {
     "administrador": "Administrador",
     "atendente": "Atendente",
     "veterinario": "Veterinário",
+    "cliente": "Cliente",
 }
+
+PERFIS_EQUIPE = ("administrador", "atendente", "veterinario")
+PERFIL_CLIENTE = "cliente"
 
 PERMISSOES = {
     "administrador": {
@@ -39,3 +51,11 @@ def nivel_nome(perfil, modulo):
 
 def pode(perfil, modulo, acao):
     return NIVEIS[nivel_nome(perfil, modulo)] >= ACAO_MINIMA[acao]
+
+
+def eh_equipe(perfil):
+    return perfil in PERFIS_EQUIPE
+
+
+def eh_cliente(perfil):
+    return perfil == PERFIL_CLIENTE

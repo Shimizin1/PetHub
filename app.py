@@ -1,157 +1,116 @@
-from datetime import datetime
-
 from flask import Flask, render_template, request, redirect, url_for, flash
-from flask_login import (LoginManager, UserMixin, login_user, logout_user,
-                         current_user)
-from werkzeug.security import check_password_hash
+from flask_login import LoginManager, current_user, logout_user
 
+from acesso import BLUEPRINTS_ABERTOS, destino_do_perfil
 from config import Config
-from database import get_connection
+from database import SemConexao
 from modulos import TODOS, MENU
-from permissoes import PERFIS, pode, nivel_nome
+from permissoes import PERFIS, pode, nivel_nome, eh_equipe, eh_cliente
+from rotas import BLUEPRINTS
+from usuario import carregar_por_id
+from utilidades import moeda, data_br, datahora_br, status_classe
 
-app = Flask(__name__)
+# Os arquivos estáticos ficam em public/static: a Vercel serve a pasta public/ pela CDN
+# (o static_folder do Flask é ignorado lá) e, localmente, o Flask serve a mesma pasta.
+app = Flask(__name__, static_folder="static", static_url_path="/static")
 app.config.from_object(Config)
 
+# ---------- Rotas ----------
+# publico (/), auth (/login, /cadastro), portal (/cliente) e admin (/admin) ...
+for blueprint in BLUEPRINTS:
+    app.register_blueprint(blueprint)
+# ... e os CRUDs da equipe (/admin/clientes, /admin/pets, ...), montados em modulos.py
 for blueprint in TODOS:
     app.register_blueprint(blueprint)
 
 # ---------- Login (Flask-Login) ----------
 login_manager = LoginManager(app)
-login_manager.login_view = "login"
+login_manager.login_view = "auth.login"
 login_manager.login_message = "Faça login para continuar."
 login_manager.login_message_category = "warning"
+login_manager.user_loader(carregar_por_id)
 
 
-class Usuario(UserMixin):
-    def __init__(self, id, nome, perfil):
-        self.id = str(id)
-        self.nome = nome
-        self.perfil = perfil
-
-
-@login_manager.user_loader
-def carregar_usuario(user_id):
-    conexao = get_connection()
-    if conexao is None:
+@app.before_request
+def proteger_areas():
+    """
+    Seguro por padrão: tudo é protegido, exceto os blueprints abertos (publico, auth) e os estáticos.
+      - /cliente/*  -> só perfil cliente
+      - o resto     -> só equipe (administrador, atendente, veterinário)
+    A permissão por módulo (clientes, pets...) continua sendo checada em crud.py.
+    """
+    if request.endpoint in (None, "static") or request.blueprint in BLUEPRINTS_ABERTOS:
         return None
-    cursor = conexao.cursor(dictionary=True)
-    try:
-        cursor.execute("SELECT id, nome, perfil FROM usuarios WHERE id = %s", (user_id,))
-        linha = cursor.fetchone()
-        return Usuario(linha["id"], linha["nome"], linha["perfil"]) if linha else None
-    finally:
-        cursor.close()
-        conexao.close()
+    if not current_user.is_authenticated:
+        return login_manager.unauthorized()
+
+    area_cliente = request.blueprint == "portal"
+    perfil_ok = eh_cliente(current_user.perfil) if area_cliente else eh_equipe(current_user.perfil)
+    if perfil_ok and area_cliente and not current_user.cliente_id:
+        perfil_ok = False                       # login de cliente sem cadastro de dono ligado
+    if perfil_ok:
+        return None
+
+    perfil_desconhecido = destino_do_perfil(current_user.perfil) is None
+    cliente_sem_cadastro = area_cliente and eh_cliente(current_user.perfil)
+    if perfil_desconhecido or cliente_sem_cadastro:
+        logout_user()
+        flash("Sua conta não está configurada corretamente. Fale com a loja.", "warning")
+        return redirect(url_for("auth.login"))
+    flash("Você não tem acesso a essa área.", "warning")
+    return redirect(url_for("auth.painel"))
+
+
+# ---------- Disponível em todos os templates ----------
+app.jinja_env.filters.update(moeda=moeda, data_br=data_br, datahora_br=datahora_br,
+                             status_classe=status_classe)
+
+
+def layout_do_usuario():
+    """Layout que combina com quem está navegando (usado nas telas de erro)."""
+    if current_user.is_authenticated:
+        if eh_equipe(current_user.perfil):
+            return "layouts/admin.html"
+        if eh_cliente(current_user.perfil):
+            return "layouts/cliente.html"
+    return "layouts/publico.html"
 
 
 @app.context_processor
 def contexto_global():
-    """Deixa disponíveis em todos os templates: menu, perfis e as funções pode()/nivel()."""
     def pode_(modulo, acao):
         return current_user.is_authenticated and pode(current_user.perfil, modulo, acao)
 
     def nivel_(modulo):
         return nivel_nome(current_user.perfil, modulo) if current_user.is_authenticated else "nenhum"
 
-    return dict(pode=pode_, nivel=nivel_, PERFIS=PERFIS, MENU=MENU)
+    cfg = app.config
+    loja = dict(
+        nome="PetHub",
+        horario=f"Segunda a sábado, das {cfg['HORA_ABERTURA']}h às {cfg['HORA_FECHAMENTO']}h",
+    )
+    return dict(pode=pode_, nivel=nivel_, PERFIS=PERFIS, MENU=MENU, loja=loja)
 
 
-@app.before_request
-def exigir_login():
-    """Todas as telas exigem login, exceto a de login e os arquivos estáticos."""
-    if request.endpoint in (None, "login", "static"):
-        return None
-    if not current_user.is_authenticated:
-        return login_manager.unauthorized()
-    return None
+# ---------- Telas de erro ----------
+def _erro(codigo, titulo, mensagem):
+    return render_template("erro.html", layout=layout_do_usuario(), codigo=codigo,
+                           titulo=titulo, mensagem=mensagem), codigo
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for("dashboard"))
-    if request.method == "POST":
-        usuario = request.form.get("usuario", "").strip()
-        senha = request.form.get("senha", "")
-        conexao = get_connection()
-        if conexao is None:
-            flash("Falha na conexão com o banco.", "danger")
-            return render_template("login.html")
-        cursor = conexao.cursor(dictionary=True)
-        try:
-            cursor.execute("SELECT id, nome, perfil, senha_hash FROM usuarios WHERE usuario = %s",
-                           (usuario,))
-            linha = cursor.fetchone()
-        finally:
-            cursor.close()
-            conexao.close()
-        if linha and check_password_hash(linha["senha_hash"], senha):
-            login_user(Usuario(linha["id"], linha["nome"], linha["perfil"]))
-            destino = request.args.get("next", "")
-            # só aceita redirecionar para caminhos internos do próprio site
-            if destino.startswith("/") and not destino.startswith("//"):
-                return redirect(destino)
-            return redirect(url_for("dashboard"))
-        flash("Usuário ou senha incorretos. Confira e tente de novo.", "danger")
-    return render_template("login.html")
+@app.errorhandler(404)
+def pagina_nao_encontrada(_):
+    return _erro(404, "Página não encontrada", "O endereço não existe ou o registro não é seu.")
 
 
-@app.route("/logout", methods=["POST"])
-def logout():
-    logout_user()
-    flash("Você saiu do sistema.", "success")
-    return redirect(url_for("login"))
+@app.errorhandler(405)
+def metodo_nao_permitido(_):
+    return _erro(405, "Ação não permitida", "Essa ação não está disponível por este caminho.")
 
 
-# ---------- Dashboard ----------
-@app.route("/")
-def dashboard():
-    agora = datetime.now()
-    dias = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
-            "sexta-feira", "sábado", "domingo"]
-    meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
-             "agosto", "setembro", "outubro", "novembro", "dezembro"]
-    hoje = f"{dias[agora.weekday()]}, {agora.day} de {meses[agora.month - 1]}"
-    saudacao = "Bom dia" if agora.hour < 12 else ("Boa tarde" if agora.hour < 18 else "Boa noite")
-    vazio = dict(total_clientes=0, total_pets=0, total_pendentes=0,
-                 faturamento=None, proximos=[], hoje=hoje, saudacao=saudacao)
-    conexao = get_connection()
-    if conexao is None:
-        return render_template("dashboard.html", erro="Não foi possível conectar ao banco de dados.", **vazio)
-    cursor = conexao.cursor(dictionary=True)
-    try:
-        cursor.execute("SELECT COUNT(*) AS total FROM clientes")
-        total_clientes = cursor.fetchone()["total"]
-        cursor.execute("SELECT COUNT(*) AS total FROM pets")
-        total_pets = cursor.fetchone()["total"]
-        cursor.execute("SELECT COUNT(*) AS total FROM agendamentos WHERE status = 'Agendado'")
-        total_pendentes = cursor.fetchone()["total"]
-        faturamento = None            # só o administrador enxerga o financeiro
-        if pode(current_user.perfil, "financeiro", "listar"):
-            cursor.execute("""
-                SELECT COALESCE(SUM(s.preco), 0) AS total
-                FROM agendamentos a INNER JOIN servicos s ON s.id = a.servico_id
-                WHERE a.status = 'Concluído'
-            """)
-            faturamento = cursor.fetchone()["total"]
-        cursor.execute("""
-            SELECT a.id, a.data_hora, p.nome AS pet, c.nome AS dono, s.nome AS servico
-            FROM agendamentos a
-            INNER JOIN pets p ON p.id = a.pet_id
-            INNER JOIN clientes c ON c.id = p.cliente_id
-            INNER JOIN servicos s ON s.id = a.servico_id
-            WHERE a.status = 'Agendado'
-            ORDER BY a.data_hora LIMIT 5
-        """)
-        proximos = cursor.fetchall()
-        return render_template("dashboard.html", erro=None, total_clientes=total_clientes,
-                               total_pets=total_pets, total_pendentes=total_pendentes,
-                               faturamento=faturamento, proximos=proximos,
-                               hoje=hoje, saudacao=saudacao)
-    finally:
-        cursor.close()
-        conexao.close()
+@app.errorhandler(SemConexao)
+def banco_fora_do_ar(_):
+    return _erro(503, "Sistema indisponível", "Não conseguimos falar com o banco de dados. Tente em instantes.")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,25 @@
+{% extends "layouts/publico.html" %}
+{% from "publico/_macros.html" import icone_servico %}
+{% block title %}Serviços | PetHub{% endblock %}
+{% block content %}
+{% set pode_agendar = (not current_user.is_authenticated) or current_user.perfil == 'cliente' %}
+<section class="secao container-xl">
+  <h1 class="mb-1">Serviços e preços</h1>
+  <p class="text-muted mb-4">Todos os atendimentos têm horário marcado. {{ loja.horario }}.</p>
+  <div class="cards-servico">
+    {% for s in servicos %}
+    <article class="card-servico">
+      <div class="card-servico-icone"><i class="bi {{ icone_servico(s.nome) }}"></i></div>
+      <h3>{{ s.nome }}</h3>
+      <p class="card-servico-meta"><i class="bi bi-clock"></i> {{ s.duracao_min }} min</p>
+      <div class="card-servico-preco">{{ s.preco|moeda }}</div>
+      {% if pode_agendar %}
+      <a class="btn btn-brand btn-sm mt-3 w-100" href="{{ url_for('portal.agendamento_novo', servico=s.id) }}">Agendar</a>
+      {% endif %}
+    </article>
+    {% else %}
+    <p class="vazio">Os serviços aparecerão aqui em breve.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

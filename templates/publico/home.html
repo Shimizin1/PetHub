@@ -1,0 +1,55 @@
+{% extends "layouts/publico.html" %}
+{% from "publico/_macros.html" import icone_servico %}
+{% block title %}PetHub | Banho, tosa, consultas e vacinas{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container-xl hero-grade">
+    <div>
+      <span class="selo"><i class="bi bi-heart-fill"></i> Cuidado de verdade para o seu pet</span>
+      <h1>Banho, tosa e saúde para o seu melhor amigo.</h1>
+      <p class="hero-texto">Crie sua conta, cadastre seu pet e agende o horário pelo site. Sem ligação, sem fila, sem caderninho.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-brand btn-lg" href="{{ url_for('portal.agendamento_novo') }}"><i class="bi bi-calendar-plus"></i> Agendar horário</a>
+        <a class="btn btn-ghost btn-lg" href="{{ url_for('publico.servicos') }}">Ver serviços e preços</a>
+      </div>
+      <p class="hero-nota"><i class="bi bi-clock"></i> {{ loja.horario }}</p>
+    </div>
+    <img class="hero-img" src="{{ url_for('static', filename='img/ilustracao-login.svg') }}" alt="Ilustração de um cachorro e um gato">
+  </div>
+</section>
+
+<section class="secao container-xl">
+  <h2 class="secao-titulo">Como funciona</h2>
+  <div class="passos">
+    <div class="passo"><span class="passo-num">1</span><h3>Crie sua conta</h3><p>Seus dados e um login. É rápido e gratuito.</p></div>
+    <div class="passo"><span class="passo-num">2</span><h3>Cadastre seu pet</h3><p>Nome, espécie e raça, para sabermos quem vem.</p></div>
+    <div class="passo"><span class="passo-num">3</span><h3>Escolha o horário</h3><p>Serviço, dia e hora. Você acompanha e cancela quando precisar.</p></div>
+  </div>
+</section>
+
+{% if servicos %}
+<section class="secao container-xl">
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+    <h2 class="secao-titulo mb-0">Nossos serviços</h2>
+    <a href="{{ url_for('publico.servicos') }}">Ver todos <i class="bi bi-arrow-right"></i></a>
+  </div>
+  <div class="cards-servico">
+    {% for s in servicos %}
+    <article class="card-servico">
+      <div class="card-servico-icone"><i class="bi {{ icone_servico(s.nome) }}"></i></div>
+      <h3>{{ s.nome }}</h3>
+      <p class="card-servico-meta"><i class="bi bi-clock"></i> {{ s.duracao_min }} min</p>
+      <div class="card-servico-preco">{{ s.preco|moeda }}</div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="container-xl secao">
+  <div class="faixa-cta">
+    <div><h2>Pronto para o próximo banho?</h2><p>Crie sua conta e reserve o horário em menos de 2 minutos.</p></div>
+    <a class="btn btn-brand btn-lg" href="{{ url_for('auth.cadastro') }}">Criar conta grátis</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "layouts/admin.html" %}
+{% block title %}{{ titulo }} | PetHub{% endblock %}
+{% block content %}
+{% set parcial = nivel(endpoint) == 'parcial' %}
+{% set icones = {'clientes': 'bi-people', 'pets': 'bi-balloon-heart', 'servicos': 'bi-scissors', 'agendamentos': 'bi-calendar-check', 'usuarios': 'bi-shield-lock'} %}
+<div class="page-head">
+  <div class="page-title">
+    <div class="icone-modulo"><i class="bi {{ icones[endpoint] }}"></i></div>
+    <div><h1>{{ titulo }}</h1><p>{{ descricao }}</p></div>
+  </div>
+  {% if pode(endpoint, 'novo') %}
+  <a class="btn btn-brand" href="{{ url_for(endpoint ~ '.novo') }}"><i class="bi bi-plus-lg"></i> Novo</a>
+  {% endif %}
+</div>
+
+<form method="get" class="busca">
+  <div class="input-group">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input class="form-control" name="busca" value="{{ busca }}" placeholder="Pesquisar em {{ titulo|lower }}" aria-label="Pesquisar">
+  </div>
+  <button class="btn btn-outline-primary">Pesquisar</button>
+  {% if busca %}<a class="btn btn-ghost" href="{{ url_for(endpoint ~ '.listar') }}">Limpar</a>{% endif %}
+</form>
+
+{% set tem_acoes = pode(endpoint, 'editar') or pode(endpoint, 'excluir') %}
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          {% for col in colunas %}<th>{{ col[0] }}</th>{% endfor %}
+          {% if tem_acoes %}<th class="text-end">Ações</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in registros %}
+        <tr>
+          {% for col in colunas %}
+            {% set fmt = col[2] if col|length > 2 else '' %}
+            {% set v = r[col[1]] %}
+            <td>
+              {% if v is none %}—
+              {% elif fmt == 'moeda' %}R$ {{ "%.2f"|format(v)|replace(".", ",") }}
+              {% elif fmt == 'data' %}{{ v.strftime('%d/%m/%Y') }}
+              {% elif fmt == 'datahora' %}<span class="text-nowrap">{{ v.strftime('%d/%m/%Y às %H:%M') }}</span>
+              {% elif fmt == 'status' %}
+                <span class="chip chip-{{ v|lower|replace('í', 'i') }}">{{ v }}</span>
+              {% elif fmt == 'perfil' %}
+                <span class="chip chip-{{ v }}">{{ PERFIS.get(v, v) }}</span>
+              {% else %}{{ v }}{% endif %}
+            </td>
+          {% endfor %}
+          {% if tem_acoes %}
+          <td class="text-end text-nowrap">
+            {% if pode(endpoint, 'editar') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for(endpoint ~ '.editar', id=r.id) }}"><i class="bi bi-pencil-square"></i> {{ 'Atualizar' if parcial else 'Editar' }}</a>
+            {% endif %}
+            {% if pode(endpoint, 'excluir') %}
+            <form class="d-inline" method="post" action="{{ url_for(endpoint ~ '.excluir', id=r.id) }}" onsubmit="return confirmarExclusao('este registro');">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Excluir</button>
+            </form>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+      {% else %}
+        <tr><td colspan="{{ colunas|length + (1 if tem_acoes else 0) }}" class="vazio">
+          Nenhum registro encontrado.{% if pode(endpoint, 'novo') %} Use o botão Novo para cadastrar.{% endif %}
+        </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="contagem">{{ registros|length }} registro(s) encontrado(s)</p>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{# TEMPLATE DO CLIENTE: barra no topo, conteúdo centralizado, bom no celular. Usado por tudo em /cliente #}
+{% block body_class %}area-cliente{% endblock %}
+{% block corpo %}
+  <nav class="navbar navbar-expand-md nav-topo" aria-label="Menu do cliente">
+    <div class="container-xl">
+      <a class="brand brand-topo" href="{{ url_for('portal.painel') }}">
+        <img src="{{ url_for('static', filename='img/logo-mark.svg') }}" alt="">
+        <span class="brand-name">Pet<span>Hub</span></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuCliente"
+              aria-controls="menuCliente" aria-expanded="false" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+      <div class="collapse navbar-collapse" id="menuCliente">
+        <ul class="navbar-nav me-auto gap-md-1 mt-3 mt-md-0">
+          {# (endpoint, texto, ícone, prefixo que deixa o item "ativo") #}
+          {% set itens = [('portal.painel', 'Início', 'bi-house-heart', 'portal.painel'),
+                          ('portal.pets', 'Meus pets', 'bi-balloon-heart', 'portal.pet'),
+                          ('portal.agendamentos', 'Agendamentos', 'bi-calendar-check', 'portal.agendamento'),
+                          ('portal.perfil', 'Meus dados', 'bi-person-circle', 'portal.perfil')] %}
+          {% for endpoint, texto, icone, prefixo in itens %}
+          <li class="nav-item"><a class="nav-link {{ 'ativo' if request.endpoint and request.endpoint.startswith(prefixo) }}" href="{{ url_for(endpoint) }}"><i class="bi {{ icone }}"></i> {{ texto }}</a></li>
+          {% endfor %}
+        </ul>
+        <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+          <a class="btn btn-brand btn-sm" href="{{ url_for('portal.agendamento_novo') }}"><i class="bi bi-plus-lg"></i> Agendar</a>
+          <form method="post" action="{{ url_for('auth.logout') }}"><button class="btn btn-sm btn-sair-topo"><i class="bi bi-box-arrow-right"></i> Sair</button></form>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="container-xl conteudo-cliente">
+    {% include "_flash.html" %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="rodape-simples">{{ loja.nome }} · {{ loja.horario }}</footer>
+{% endblock %}

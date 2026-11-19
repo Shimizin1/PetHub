@@ -1,0 +1,32 @@
+{% extends "layouts/cliente.html" %}
+{% block title %}Meus dados | PetHub{% endblock %}
+{% block content %}
+<div class="page-head"><div class="page-title"><div><h1>Meus dados</h1><p>Mantenha seu contato atualizado.</p></div></div></div>
+<form method="post" class="panel form-estreito">
+  <div class="panel-body">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label" for="nome">Nome *</label>
+        <input class="form-control" id="nome" name="nome" maxlength="100" value="{{ registro.get('nome', '') }}" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="telefone">Telefone</label>
+        <input class="form-control" id="telefone" name="telefone" maxlength="20" value="{{ registro.get('telefone', '') }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="cidade">Cidade</label>
+        <input class="form-control" id="cidade" name="cidade" maxlength="60" value="{{ registro.get('cidade', '') }}">
+      </div>
+    </div>
+    <hr class="my-4">
+    <h2 class="h5">Trocar senha</h2>
+    <p class="text-muted">Deixe em branco para manter a senha atual.</p>
+    <div class="row g-3">
+      <div class="col-md-4"><label class="form-label" for="senha_atual">Senha atual</label><input class="form-control" type="password" id="senha_atual" name="senha_atual" autocomplete="current-password"></div>
+      <div class="col-md-4"><label class="form-label" for="nova_senha">Nova senha</label><input class="form-control" type="password" id="nova_senha" name="nova_senha" minlength="6" autocomplete="new-password"></div>
+      <div class="col-md-4"><label class="form-label" for="confirmar">Confirmar nova senha</label><input class="form-control" type="password" id="confirmar" name="confirmar" minlength="6" autocomplete="new-password"></div>
+    </div>
+  </div>
+  <div class="panel-foot"><button class="btn btn-brand"><i class="bi bi-check-lg"></i> Salvar</button></div>
+</form>
+{% endblock %}

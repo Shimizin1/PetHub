@@ -1,0 +1,71 @@
+{% extends "layouts/admin.html" %}
+{% block title %}Início | PetHub{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div class="page-title">
+    <div>
+      <h1>{{ saudacao }}, {{ current_user.nome.split(' ')[0] }}</h1>
+      <p>{{ hoje|capitalize }}</p>
+    </div>
+  </div>
+  {% if pode('agendamentos', 'novo') %}
+  <a class="btn btn-brand" href="{{ url_for('agendamentos.novo') }}"><i class="bi bi-plus-lg"></i> Novo agendamento</a>
+  {% endif %}
+</div>
+
+{% if erro %}<div class="alert alert-danger">{{ erro }}</div>{% endif %}
+
+<div class="stats">
+  <div class="stat stat-main">
+    <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+    <div><div class="stat-valor">{{ total_pendentes }}</div><div class="stat-rotulo">Agendamentos pendentes</div></div>
+  </div>
+  {% if pode('clientes', 'listar') %}
+  <div class="stat">
+    <div class="stat-icon"><i class="bi bi-people"></i></div>
+    <div><div class="stat-valor">{{ total_clientes }}</div><div class="stat-rotulo">Clientes</div></div>
+  </div>
+  {% endif %}
+  <div class="stat">
+    <div class="stat-icon"><i class="bi bi-balloon-heart"></i></div>
+    <div><div class="stat-valor">{{ total_pets }}</div><div class="stat-rotulo">Pets cadastrados</div></div>
+  </div>
+  {% if faturamento is not none %}
+  <div class="stat">
+    <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+    <div><div class="stat-valor">R$ {{ "%.2f"|format(faturamento or 0)|replace(".", ",") }}</div><div class="stat-rotulo">Faturado em atendimentos concluídos</div></div>
+  </div>
+  {% endif %}
+</div>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Próximos agendamentos</h2>
+    {% if pode('agendamentos', 'listar') %}
+    <a class="btn btn-sm btn-ghost" href="{{ url_for('agendamentos.listar') }}">Ver agenda completa</a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead><tr><th>Data e hora</th><th>Pet</th><th>Dono</th><th>Serviço</th><th class="text-end"><span class="visually-hidden">Ações</span></th></tr></thead>
+      <tbody>
+      {% for a in proximos %}
+        <tr>
+          <td class="text-nowrap">{{ a.data_hora.strftime('%d/%m/%Y às %H:%M') }}</td>
+          <td><b>{{ a.pet }}</b></td>
+          <td>{{ a.dono }}</td>
+          <td>{{ a.servico }}</td>
+          <td class="text-end">
+            {% if pode('agendamentos', 'editar') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('agendamentos.editar', id=a.id) }}">{{ 'Atualizar' if nivel('agendamentos') == 'parcial' else 'Editar' }}</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="vazio">Nenhum agendamento pendente. A agenda está livre.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
